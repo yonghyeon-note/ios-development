@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+final class ViewController: UIViewController {
 
     // MARK: - Properties
 
@@ -16,6 +16,13 @@ class ViewController: UIViewController {
         .systemPurple, .systemOrange, .systemPink, .systemTeal,
         .systemIndigo, .systemBrown, .systemGray, .systemCyan
     ]
+
+    private struct Section {
+        let title: String
+        let items: [UIColor]
+    }
+
+    private var sections: [Section] = []
 
     private let colorCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -32,6 +39,7 @@ class ViewController: UIViewController {
         view.backgroundColor = .systemBackground
 
         setupCollectionView()
+        setupSections()
     }
 
 
@@ -44,6 +52,7 @@ class ViewController: UIViewController {
         colorCollectionView.delegate = self
 
         colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "Cell")
+        colorCollectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.identifier)
 
         colorCollectionView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -55,6 +64,14 @@ class ViewController: UIViewController {
         ])
     }
 
+    private func setupSections() {
+        sections = [
+            Section(title: "첫 번째", items: colors),
+            Section(title: "두 번째", items: colors),
+            Section(title: "세 번째", items: colors)
+        ]
+    }
+
 }
 
 
@@ -62,10 +79,17 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDataSource {
 
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return colors.count * 3
+    /* numberOfSections */
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return sections.count
     }
-    
+
+    /* numberOfItemsInSection */
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return sections[section].items.count
+    }
+
+    /* cellForItemAt */
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
 
@@ -75,6 +99,21 @@ extension ViewController: UICollectionViewDataSource {
         return cell
     }
 
+    /* viewForSupplementaryElementOfKind */
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: SectionHeaderView.identifier, for: indexPath) as! SectionHeaderView
+
+            let section = sections[indexPath.section]
+
+            header.configure(title: section.title, count: section.items.count)
+
+            return header
+        }
+
+        return UICollectionReusableView()
+    }
+
 }
 
 
@@ -82,6 +121,7 @@ extension ViewController: UICollectionViewDataSource {
 
 extension ViewController: UICollectionViewDelegate {
 
+    /* didSelectItemAt */
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedColor = colors[indexPath.item % colors.count]
         print("선택된 색상: \(selectedColor)")
@@ -104,6 +144,7 @@ extension ViewController: UICollectionViewDelegate {
 
 extension ViewController: UICollectionViewDelegateFlowLayout {
 
+    /* sizeForItemAt */
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let numberOfColumns: CGFloat = 3
         let spacing: CGFloat = 10
@@ -113,16 +154,24 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         return itemSize
     }
 
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 10
+    /* insetForSectionAt */
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
     }
 
+    /* minimumLineSpacingForSectionAt */
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 10
     }
 
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+    /* minimumInteritemSpacingForSectionAt */
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 10
+    }
+
+    /* referenceSizeForHeaderInSection */
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        return CGSize(width: collectionView.frame.width, height: 50)
     }
 
 }
